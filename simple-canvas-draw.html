@@ -1,0 +1,69 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module is="simple-canvas-draw">
+  <template>
+    <style>
+      :host, canvas {
+        display: block;
+      }
+      canvas {
+        border: 1px solid #000;
+      }
+    </style>
+
+    <canvas id="canvas" width=[[width]] height=[[height]]></canvas>
+  </template>
+  <script>
+    Polymer({
+      is: 'simple-canvas-draw',
+      properties: {
+        width: { type: Number, value: 400 },
+        height: { type: Number, value: 400 }
+      },
+      ready: function() {
+        var ctx = this.$.canvas.getContext('2d');
+        var _isDrawing = false;
+        var prevX = 0;
+        var prevY = 0;
+        function start(e) { 
+          prevX = (e.clientX || e.touches[0].clientX) - this.offsetLeft;
+          prevY = (e.clientY || e.touches[0].clientY) - this.offsetTop;
+          _isDrawing = true;
+        }
+        function stop() {
+          prevX = 0;
+          prevY = 0;
+          _isDrawing = false;
+        }
+        function move(e) {
+          var mX = (e.clientX || e.touches[0].clientX) - this.offsetLeft;
+          var mY = (e.clientY || e.touches[0].clientY) - this.offsetTop;
+          if (_isDrawing && prevX && prevY) {
+            ctx.beginPath();
+            ctx.moveTo(prevX, prevY);
+            ctx.lineTo(mX, mY);
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            prevX = mX;
+            prevY = mY;
+          }
+        }
+        this.$.canvas.addEventListener('touchstart', start);
+        this.$.canvas.addEventListener('touchend', stop);
+        this.$.canvas.addEventListener('touchcancel', stop);
+        this.$.canvas.addEventListener('touchmove', move);
+        this.$.canvas.addEventListener('mousedown', start);
+        this.$.canvas.addEventListener('mouseup', stop);
+        this.$.canvas.addEventListener('mouseout', stop);
+        this.$.canvas.addEventListener('mousemove', move);
+      },
+      clear: function() {
+        this.$.canvas.getContext('2d').clearRect(0, 0, this.width, this.height);
+      },
+      toDataURL: function() {
+        return this.$.canvas.toDataURL('image/png');
+      }
+    });
+  </script>
+</dom-module>
