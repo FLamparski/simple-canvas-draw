@@ -1,5 +1,7 @@
 {
   "name": "simple-canvas-draw",
+  "version": "0.0.1",
+  "repository": "https://github.com/FLamparski/simple-canvas-draw",
   "authors": [
     "Filip Wieland <filiplamparski@gmail.com>"
   ],
