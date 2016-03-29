@@ -8,6 +8,7 @@
       }
       canvas {
         border: 1px solid #000;
+        @apply(--simple-canvas-draw-canvas);
       }
     </style>
 
@@ -23,46 +24,51 @@
       ready: function() {
         var ctx = this.$.canvas.getContext('2d');
         var _isDrawing = false;
-        var prevX = 0;
-        var prevY = 0;
-        function start(e) { 
-          prevX = (e.clientX || e.touches[0].clientX) - this.offsetLeft;
-          prevY = (e.clientY || e.touches[0].clientY) - this.offsetTop;
+        var prevPos = null;
+        function start(e) {
+          prevPos = this.getMousePos(e);
           _isDrawing = true;
         }
         function stop() {
-          prevX = 0;
-          prevY = 0;
+          prevPos = null;
           _isDrawing = false;
         }
         function move(e) {
-          var mX = (e.clientX || e.touches[0].clientX) - this.offsetLeft;
-          var mY = (e.clientY || e.touches[0].clientY) - this.offsetTop;
-          if (_isDrawing && prevX && prevY) {
+          var pos = this.getMousePos(e);
+          if (_isDrawing && prevPos) {
             ctx.beginPath();
-            ctx.moveTo(prevX, prevY);
-            ctx.lineTo(mX, mY);
+            ctx.moveTo(prevPos.x, prevPos.y);
+            ctx.lineTo(pos.x, pos.y);
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
+            ctx.closePath();
             ctx.stroke();
-            prevX = mX;
-            prevY = mY;
+            prevPos = pos;
           }
         }
-        this.$.canvas.addEventListener('touchstart', start);
-        this.$.canvas.addEventListener('touchend', stop);
-        this.$.canvas.addEventListener('touchcancel', stop);
-        this.$.canvas.addEventListener('touchmove', move);
-        this.$.canvas.addEventListener('mousedown', start);
-        this.$.canvas.addEventListener('mouseup', stop);
-        this.$.canvas.addEventListener('mouseout', stop);
-        this.$.canvas.addEventListener('mousemove', move);
+        this.$.canvas.addEventListener('touchstart', start.bind(this));
+        this.$.canvas.addEventListener('touchend', stop.bind(this));
+        this.$.canvas.addEventListener('touchcancel', stop.bind(this));
+        this.$.canvas.addEventListener('touchmove', move.bind(this));
+        this.$.canvas.addEventListener('mousedown', start.bind(this));
+        this.$.canvas.addEventListener('mouseup', stop.bind(this));
+        this.$.canvas.addEventListener('mouseout', stop.bind(this));
+        this.$.canvas.addEventListener('mousemove', move.bind(this));
       },
       clear: function() {
         this.$.canvas.getContext('2d').clearRect(0, 0, this.width, this.height);
       },
       toDataURL: function() {
         return this.$.canvas.toDataURL('image/png');
+      },
+      getMousePos: function(evt) {
+        var rect = this.$.canvas.getBoundingClientRect();
+        var eX = evt.clientX || evt.touches[0].clientX;
+        var eY = evt.clientY || evt.touches[0].clientY;
+        return {
+          x: (evt.clientX - rect.left) / (rect.right - rect.left) * this.$.canvas.width,
+          y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * this.$.canvas.height
+        };
       }
     });
   </script>
